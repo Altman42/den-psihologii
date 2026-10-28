@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
+<title>Психологический оракул</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow phone column — title, two choices, then a card with a fresh Rorschach-style blot and the text under it */
+:root{
+  --paper:#eef1f5; --card:#ffffff; --ink:#1f2554; --muted:#5d6488; --accent:#e0564a; --line:#d5d9e4;
+  --blot:#1f2554;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#12152b; --card:#1b1f3b; --ink:#e9ebf7; --muted:#a3a8c9; --accent:#ff7a6e; --line:#2d3257; --blot:#cfd4f5; color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#12152b; --card:#1b1f3b; --ink:#e9ebf7; --muted:#a3a8c9; --accent:#ff7a6e; --line:#2d3257; --blot:#cfd4f5; color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:440px;margin:0 auto;padding-block:28px 32px;display:flex;flex-direction:column;gap:22px;min-height:100%;box-sizing:border-box}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,8vw,34px);line-height:1.12;margin:6px 0 10px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{margin:0;color:var(--muted);max-width:34ch}
+
+.choices{display:grid;gap:12px}
+.choice{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;padding:16px 18px;
+  background:var(--card);border:1.5px solid var(--line);border-radius:14px;transition:border-color .15s,transform .15s}
+.choice:hover{border-color:var(--ink)}
+.choice:active{transform:scale(.98)}
+.choice:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.choice canvas{width:48px;height:48px;flex:none}
+.choice b{display:block;font-family:var(--f-display);font-weight:500;font-size:17px}
+.choice span{color:var(--muted);font-size:14px}
+
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:22px 22px 24px;display:flex;flex-direction:column;gap:14px}
+.card .kind{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.blot{width:100%;aspect-ratio:3/2;max-width:100%;display:block}
+.text{font-family:var(--f-display);font-weight:500;font-size:clamp(18px,5.4vw,22px);line-height:1.35;margin:0;text-wrap:balance}
+.note{margin:0;font-size:13px;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 18px;border-radius:999px;font-weight:700;font-size:15px;text-align:center}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--ink);color:var(--paper);flex:1}
+.btn.ghost{border:1.5px solid var(--line);color:var(--ink)}
+.fade{animation:in .5s ease both}
+@keyframes in{from{opacity:.0;transform:translateY(6px)}to{opacity:1;transform:none}}
+footer{margin-top:auto;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.fade{animation:none}.choice{transition:none}}
+</style>
+
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="eyebrow">День психологии</div>
+    <h1>Что видишь в&nbsp;пятне — то&nbsp;и&nbsp;<em>сбудется</em></h1>
+    <p class="lead">Выбери, что хочешь получить. У каждого выпадает своё.</p>
+  </header>
+
+  <section id="start" class="choices" aria-label="Выбор">
+    <button class="choice" id="pick-prediction" data-kind="prediction">
+      <canvas width="96" height="96" aria-hidden="true"></canvas>
+      <div><b>Предсказание</b><span>Что тебя ждёт в ближайшее время</span></div>
+    </button>
+    <button class="choice" id="pick-wish" data-kind="wish">
+      <canvas width="96" height="96" aria-hidden="true"></canvas>
+      <div><b>Пожелание</b><span>Тёплые слова на сегодня</span></div>
+    </button>
+  </section>
+
+  <section id="result" class="card" hidden aria-live="polite">
+    <div class="kind" id="kind"></div>
+    <canvas class="blot" id="blot" width="600" height="400" role="img" aria-label="Чернильное пятно, как в тесте Роршаха"></canvas>
+    <p class="text" id="text"></p>
+    <p class="note">Пятно тоже уникальное. На что оно похоже тебе?</p>
+    <div class="row">
+      <button class="btn primary" id="again">Ещё одно</button>
+      <button class="btn ghost" id="back">Назад</button>
+    </div>
+  </section>
+
+  <footer>Для настроения, а не для диагноза 🙂</footer>
+</main>
+
+<script>
+const DATA = {
+  prediction: [
+    "На этой неделе кто-то скажет тебе слова, которые ты давно хотел(а) услышать.",
+    "Скоро ты поймёшь, что справился(-ась) с тем, что казалось невозможным.",
+    "Тебя ждёт разговор, после которого станет намного легче.",
+    "В ближайшие дни ты встретишь человека, который тебя по-настоящему поймёт.",
+    "Решение, над которым ты думаешь, окажется правильным.",
+    "Скоро у тебя появится повод гордиться собой.",
+    "Твоя идея, которую ты откладывал(а), наконец получит ход.",
+    "Впереди день, когда всё получится с первого раза.",
+    "Ты найдёшь ответ там, где совсем не искал(а).",
+    "Скоро тебе захочется сказать «спасибо» самому(-ой) себе, и это будет заслуженно.",
+    "Сессия пройдёт спокойнее, чем ты ожидаешь.",
+    "В этом месяце ты научишься чему-то, что пригодится надолго.",
+    "Кто-то рядом давно восхищается тобой. Скоро ты об этом узнаешь.",
+    "Твоя тревога окажется больше, чем сама проблема. Всё решится.",
+    "Скоро случится маленькое совпадение, которое поднимет тебе настроение на весь день.",
+    "Ты удивишься, сколько сил у тебя на самом деле.",
+    "Впереди встреча, которая перерастёт в крепкую дружбу.",
+    "Скоро ты отпустишь то, что давно тянуло назад, и почувствуешь лёгкость.",
+    "Твоя доброта вернётся к тебе с той стороны, откуда не ждёшь.",
+    "На следующей неделе у тебя будет отличный повод улыбнуться.",
+    "Ты сделаешь шаг, на который раньше не решался(-ась), и не пожалеешь.",
+    "Тебя ждёт хорошая новость, связанная с учёбой.",
+    "Скоро ты поймёшь, чего хочешь на самом деле.",
+    "Тот, о ком ты сейчас подумал(а), тоже вспоминает тебя.",
+    "Твоё упорство скоро даст результат, который заметят другие.",
+    "Впереди вечер, который ты будешь вспоминать с теплом.",
+    "Скоро ты окажешься в нужном месте в нужное время.",
+    "Ближайший понедельник станет удачным началом.",
+    "Ты получишь совет, который изменит твой взгляд на важную ситуацию.",
+    "Скоро у тебя будет время на то, что ты по-настоящему любишь.",
+    "В трудный момент рядом окажется именно тот, кто нужен.",
+    "Твои старания на этой неделе не останутся незамеченными.",
+    "Ты станешь для кого-то поддержкой, и это сделает счастливее вас обоих.",
+    "Скоро ты посмотришь на себя со стороны и понравишься себе.",
+    "Впереди период, когда всё будет складываться само собой.",
+    "Тебя ждёт приятный сюрприз до конца месяца.",
+    "Ты наконец выспишься, и мир покажется добрее.",
+    "Скоро ты поймёшь, что ошибка была не провалом, а опытом.",
+    "Твоя мечта ближе, чем кажется. Осталось несколько шагов.",
+    "В ближайшее время ты рассмеёшься так, что заболят щёки."
+  ],
+  wish: [
+    "Пусть тебе хватает сил не только на дела, но и на отдых.",
+    "Желаю быть к себе таким же добрым(-ой), как к друзьям.",
+    "Пусть рядом будут люди, с которыми можно быть собой.",
+    "Желаю спокойствия внутри, даже когда вокруг суета.",
+    "Пусть каждый день приносит хотя бы одну маленькую радость.",
+    "Желаю не сравнивать себя с другими. У тебя свой путь.",
+    "Пусть тревоги будут меньше, а поводов улыбнуться больше.",
+    "Желаю смелости просить о помощи, когда она нужна.",
+    "Пусть у тебя всегда находится время на себя.",
+    "Желаю верить в себя хотя бы так же, как в тебя верят близкие.",
+    "Пусть ошибки учат, а не ранят.",
+    "Желаю крепкого сна и бодрых утр.",
+    "Пусть твои чувства будут услышаны, начиная с тебя самого(-ой).",
+    "Желаю гордиться не только победами, но и попытками.",
+    "Пусть сегодня кто-то сделает тебе приятное просто так.",
+    "Желаю умения говорить «нет» без чувства вины.",
+    "Пусть внутренний критик чаще уступает место внутреннему другу.",
+    "Желаю, чтобы учёба приносила интерес, а не только оценки.",
+    "Пусть тебя окружает тепло, даже в самые холодные дни.",
+    "Желаю замечать, как много у тебя уже получается.",
+    "Пусть всё, что тяготит, постепенно становится легче.",
+    "Желаю тебе друзей, с которыми можно молчать и не чувствовать неловкости.",
+    "Пусть в голове будет ясно, а на душе светло.",
+    "Желаю разрешать себе отдыхать, не заслуживая этого.",
+    "Пусть твои границы уважают, начиная с тебя самого(-ой).",
+    "Желаю находить вдохновение в простых вещах.",
+    "Пусть у тебя всегда будет человек, которому можно позвонить в любое время.",
+    "Желаю любопытства к жизни и к себе.",
+    "Пусть каждое «не получилось» превращается в «пока не получилось».",
+    "Желаю ценить себя не за результат, а просто за то, что ты есть.",
+    "Пусть твоя энергия тратится на то, что тебе действительно важно.",
+    "Желаю гармонии между «надо» и «хочу».",
+    "Пусть сегодняшний день будет чуточку лучше вчерашнего.",
+    "Желаю тебе тишины, когда она нужна, и музыки, когда хочется танцевать.",
+    "Пусть тебя чаще обнимают.",
+    "Желаю не бояться перемен. Они ведут к новому.",
+    "Пусть ты будешь услышан(а) там, где это важнее всего.",
+    "Желаю мягкости к себе в трудные дни.",
+    "Пусть всё задуманное складывается в своё время.",
+    "Желаю, чтобы рядом было много поводов сказать: «Как же хорошо!»"
+  ]
+};
+const LABEL = {prediction:"Твоё предсказание", wish:"Твоё пожелание"};
+
+const $ = id => document.getElementById(id);
+let current = null;
+const recent = {prediction:[], wish:[]};
+
+function pick(kind){
+  const list = DATA[kind];
+  let i, guard = 0;
+  do { i = Math.floor(Math.random()*list.length); guard++; }
+  while (recent[kind].includes(i) && guard < 50);
+  recent[kind].push(i);
+  if (recent[kind].length > Math.min(15, list.length-1)) recent[kind].shift();
+  return list[i];
+}
+
+// Mirror-symmetric ink blot, freshly random each time
+function drawBlot(canvas, seedScale=1){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height, cx = W/2;
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--blot').trim() || '#1f2554';
+  ctx.clearRect(0,0,W,H);
+  const half = document.createElement('canvas'); half.width = cx; half.height = H;
+  const h = half.getContext('2d');
+  h.fillStyle = color;
+  const blobs = 5 + Math.floor(Math.random()*5);
+  for (let b=0;b<blobs;b++){
+    let x = cx - Math.random()*cx*0.55, y = H*(0.2+Math.random()*0.6);
+    const steps = 20 + Math.floor(Math.random()*40);
+    let r = (H*0.05 + Math.random()*H*0.09)*seedScale;
+    for (let s=0;s<steps;s++){
+      h.beginPath(); h.arc(x,y,Math.max(1,r),0,Math.PI*2); h.fill();
+      x += (Math.random()-0.6)*r*0.9; y += (Math.random()-0.5)*r*0.9;
+      x = Math.min(cx+r*0.3, Math.max(cx*0.08, x)); y = Math.min(H*0.92, Math.max(H*0.08, y));
+      r *= 0.9 + Math.random()*0.15;
+    }
+  }
+  for (let d=0; d<14; d++){ // splatter dots
+    h.beginPath();
+    h.arc(cx - Math.random()*cx*0.85, H*(0.1+Math.random()*0.8), 1+Math.random()*H*0.012, 0, Math.PI*2); h.fill();
+  }
+  ctx.drawImage(half,0,0);
+  ctx.save(); ctx.translate(W,0); ctx.scale(-1,1); ctx.drawImage(half,0,0); ctx.restore();
+}
+
+function show(kind){
+  current = kind;
+  $('kind').textContent = LABEL[kind];
+  $('text').textContent = pick(kind);
+  drawBlot($('blot'));
+  $('start').hidden = true;
+  const card = $('result');
+  card.hidden = false;
+  card.classList.remove('fade'); void card.offsetWidth; card.classList.add('fade');
+}
+
+document.querySelectorAll('.choice').forEach(btn=>{
+  drawBlot(btn.querySelector('canvas'), 1.4);
+  btn.addEventListener('click', ()=>show(btn.dataset.kind));
+});
+$('again').addEventListener('click', ()=>show(current));
+$('back').addEventListener('click', ()=>{ $('result').hidden = true; $('start').hidden = false; });
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', ()=>{
+  document.querySelectorAll('.choice canvas').forEach(c=>drawBlot(c,1.4));
+  if (!$('result').hidden) drawBlot($('blot'));
+});
+</script>
+
+</body>
+</html>
