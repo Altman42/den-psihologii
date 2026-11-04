@@ -1,14 +1,12 @@
-// Shared form logic: photo preview, client-side compression, validation, submit to FormSubmit (multipart)
+// Shared form logic: photo preview, client-side compression, validation, submit to Google Apps Script (JSON)
+const ENDPOINT = '__APPS_SCRIPT_URL__';
+
 (function () {
   const form = document.querySelector('form[data-task]');
   if (!form) return;
   const err = document.getElementById('form-error');
   const btn = form.querySelector('button[type=submit]');
   const MAX_SIDE = 1600, QUALITY = 0.82;
-
-  // where FormSubmit should return after sending
-  const next = form.querySelector('input[name=_next]');
-  if (next) next.value = new URL('thanks.html?task=' + form.dataset.task, location.href).href;
 
   function showError(text) { err.textContent = text; err.hidden = false; err.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 
@@ -32,21 +30,18 @@
     });
   });
 
-  function compress(file) {
-    return new Promise(resolve => {
-      if (!file.type.startsWith('image/')) return resolve(file);
+  // resize to MAX_SIDE and return base64 JPEG (without the data: prefix)
+  function toJpegBase64(file) {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const k = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
         const c = document.createElement('canvas');
         c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        c.toBlob(b => {
-          if (!b || b.size >= file.size) return resolve(file);
-          resolve(new File([b], (file.name || 'photo').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg', lastModified: file.lastModified }));
-        }, 'image/jpeg', QUALITY);
+        resolve(c.toDataURL('image/jpeg', QUALITY).split(',')[1]);
       };
-      img.onerror = () => resolve(file);
+      img.onerror = () => reject(new Error('Не получилось открыть фото. Попробуйте выбрать другое или сделать скриншот фото.'));
       img.src = URL.createObjectURL(file);
     });
   }
@@ -54,7 +49,6 @@
   form.addEventListener('submit', async e => {
     e.preventDefault();
     err.hidden = true;
-    // required checks with friendly text
     for (const el of form.querySelectorAll('[required]')) {
       const empty = el.type === 'radio' ? !form.querySelector(`input[name="${el.name}"]:checked`)
         : el.type === 'file' ? !(el.files && el.files.length) : !el.value.trim();
@@ -62,20 +56,22 @@
     }
     btn.disabled = true; btn.textContent = 'Отправляем…';
     try {
-      for (const input of form.querySelectorAll('input[type=file]')) {
-        const f = input.files && input.files[0];
-        if (!f) continue;
-        const small = await compress(f);
-        if (small !== f && window.DataTransfer) {
-          try { const dt = new DataTransfer(); dt.items.add(small); input.files = dt.files; } catch (_) {}
-        }
-        const sent = input.files[0];
-        if (sent.size > 9.5 * 1024 * 1024) { throw new Error('Фото слишком большое (больше 10 МБ). Сделайте снимок поменьше или скриншот фото.'); }
+      const payload = { task: form.dataset.title, fields: [], hp: (form.querySelector('[name=_honey]') || {}).value || '' };
+      for (const el of form.elements) {
+        if (!el.name || el.name.startsWith('_') || el.type === 'file' || el.type === 'submit') continue;
+        if (el.type === 'radio' && !el.checked) continue;
+        payload.fields.push([el.name, el.value.trim()]);
       }
-      HTMLFormElement.prototype.submit.call(form);
+      const fileInput = form.querySelector('input[type=file]');
+      if (fileInput) payload.photo = await toJpegBase64(fileInput.files[0]);
+
+      const res = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
+      const out = await res.json().catch(() => ({}));
+      if (!out.ok) throw new Error('Сервер не принял ответ. Попробуйте ещё раз через минуту.');
+      location.href = 'thanks.html';
     } catch (ex) {
       btn.disabled = false; btn.textContent = 'Отправить';
-      showError(ex.message || 'Не получилось отправить. Попробуйте ещё раз.');
+      showError(ex instanceof TypeError ? 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.' : ex.message);
     }
   });
 })();
