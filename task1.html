@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Психологический вызов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div class="eyebrow">QR-код №1 <span class="tag">· Задание на мышление</span></div>
+    <h1>Психологический вызов</h1>
+    <p class="sub">«Разгадай мудрость психолога»</p>
+  </header>
+  <section class="card">
+    <p class="lead">Прочитайте афоризм и раскройте его смысл.</p>
+    <p class="quote">«Мы видим мир не таким, какой он есть, а таким, какие мы есть».</p>
+  </section>
+  <form class="card" data-task="1" action="https://formsubmit.co/imash00012@gmail.com" method="POST" enctype="multipart/form-data" novalidate>
+    <h2>Ваш ответ</h2>
+    <input type="hidden" name="_subject" value="QR №1 · Психологический вызов">
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_template" value="table">
+    <input type="hidden" name="_next" value="">
+    <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <input type="hidden" name="Задание" value="QR №1 · Психологический вызов">
+    <label for="team">Название команды
+      <input type="text" id="team" name="Команда" required data-msg="Напишите название команды." autocomplete="off">
+    </label>
+    <label for="members">Участники <small>Имена через запятую</small>
+      <input type="text" id="members" name="Участники" autocomplete="off">
+    </label>
+    <label for="q1">1. Как вы понимаете данную фразу?
+      <textarea id="q1" name="1. Как понимаете фразу" required data-msg="Ответьте на первый вопрос."></textarea>
+    </label>
+    <label for="q2">2. Почему разные люди могут воспринимать одну и ту же ситуацию по-разному?
+      <textarea id="q2" name="2. Почему воспринимают по-разному" required data-msg="Ответьте на второй вопрос."></textarea>
+    </label>
+    <label for="q3">3. Приведите пример подобной ситуации из своей жизни
+      <textarea id="q3" name="3. Пример из жизни" required data-msg="Ответьте на третий вопрос."></textarea>
+    </label>
+    <p class="msg err" id="form-error" role="alert" hidden></p>
+    <button class="btn" type="submit">Отправить</button>
+  </form>
+  <footer>День психологии · ответы получает организатор</footer>
+</main>
+<script src="assets/form.js"></script>
+</body>
+</html>

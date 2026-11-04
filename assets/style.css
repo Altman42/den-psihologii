@@ -1,0 +1,53 @@
+/* Layout: one narrow phone column — task header, conditions, then the answer form */
+:root{
+  --paper:#eef1f5; --card:#ffffff; --ink:#1f2554; --muted:#5d6488; --accent:#e0564a; --line:#d5d9e4; --ok:#1f8a5b; --warn:#b5651d;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#12152b; --card:#1b1f3b; --ink:#e9ebf7; --muted:#a3a8c9; --accent:#ff7a6e; --line:#2d3257; --ok:#4cc78e; --warn:#f0a35c; color-scheme:dark}}
+*,*::before,*::after{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+.wrap{max-width:520px;margin:0 auto;padding-block:28px 40px;display:flex;flex-direction:column;gap:20px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{color:var(--accent)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(24px,7.4vw,32px);line-height:1.15;margin:6px 0 4px;text-wrap:balance}
+.sub{font-family:var(--f-display);font-weight:500;font-size:17px;margin:0;color:var(--accent)}
+p{margin:0}
+.lead{color:var(--muted)}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.card h2{font-family:var(--f-display);font-weight:500;font-size:16px;margin:0}
+.quote{font-family:var(--f-display);font-weight:500;font-size:clamp(18px,5.2vw,21px);line-height:1.4;margin:0;text-wrap:balance}
+ol,ul{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:15px}
+label small{font-weight:400;color:var(--muted);font-size:13px}
+input[type=text],textarea{font:inherit;font-weight:400;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--ink)}
+.photo{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:150px;
+  border:2px dashed var(--line);border-radius:14px;background:var(--paper);cursor:pointer;text-align:center;padding:16px;font-weight:700}
+.photo:focus-within{border-color:var(--ink)}
+.photo input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.photo img{max-width:100%;max-height:320px;border-radius:10px}
+.photo-hint{display:flex;flex-direction:column;gap:4px;align-items:center}
+.photo span{color:var(--muted);font-weight:400;font-size:14px}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;padding:15px 20px;border-radius:999px;font-weight:700;font-size:16px;text-align:center;background:var(--ink);color:var(--paper)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.6;cursor:wait}
+.msg{font-size:14px;padding:10px 12px;border-radius:10px;border:1.5px solid currentColor}
+.msg.err{color:var(--accent)}
+.msg.warn{color:var(--warn)}
+.memes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:480px){.memes{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.meme{position:relative;display:block;border-radius:12px;overflow:hidden;border:3px solid transparent;cursor:pointer;aspect-ratio:1/1;background:var(--paper)}
+.meme img{width:100%;height:100%;object-fit:cover;display:block}
+.meme input{position:absolute;opacity:0;pointer-events:none}
+.meme b{position:absolute;left:6px;top:6px;background:var(--card);color:var(--ink);border-radius:999px;font-size:12px;padding:2px 9px}
+.meme:has(input:checked){border-color:var(--accent)}
+.meme:has(input:checked) b{background:var(--accent);color:#fff}
+.meme:has(input:focus-visible){outline:3px solid var(--ink);outline-offset:2px}
+.hp{position:absolute;left:-9999px}
+footer{font-size:12px;color:var(--muted)}
