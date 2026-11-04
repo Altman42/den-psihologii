@@ -1,5 +1,5 @@
 // Shared form logic: photo preview, client-side compression, validation, submit to Google Apps Script (JSON)
-const ENDPOINT = '__APPS_SCRIPT_URL__';
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycby5AGXOmLZR9bR8sB3TNOPAX6wTFyvVv4KuqKp8a3liK6-yX8Is3_oxHK2JOFfSW5D_/exec';
 
 (function () {
   const form = document.querySelector('form[data-task]');
